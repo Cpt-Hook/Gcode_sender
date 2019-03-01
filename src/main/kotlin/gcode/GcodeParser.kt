@@ -15,7 +15,13 @@ class GcodeParser(file: File) : Iterable<String>, Iterator<String> {
 
     override fun next(): String {
         lineNumber++
-        return parseGcode(reader.readLine())
+        val nextLine = reader.readLine()
+
+        if(lineNumber == numOfLines){
+            reader.close()
+        }
+
+        return parseGcode(nextLine)
     }
 
     private fun parseGcode(gcode: String): String {
