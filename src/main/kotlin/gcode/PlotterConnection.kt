@@ -54,6 +54,7 @@ class PlotterConnection(
 
                 sendLine(GcodeParser.enableMotorsCommand, writer, reader, true)
                 if (enableFans) {
+                    println("Sending enable fans command")
                     sendLine(GcodeParser.enableFansCommand, writer, reader, true)
                 }
 
