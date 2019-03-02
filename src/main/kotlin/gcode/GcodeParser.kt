@@ -93,4 +93,3 @@ class GcodeParser(private val gcodeFile: File) : Iterable<GCode?>, Iterator<GCod
 }
 
 class InvalidGcodeException(gcode: String) : Exception("Invalid gcode: \"$gcode\"")
-
