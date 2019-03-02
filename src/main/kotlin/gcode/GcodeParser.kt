@@ -11,7 +11,11 @@ class GcodeParser(val file: File) : Iterable<String>, Iterator<String>, Closeabl
         println("Opening file \"${file.name}\"")
     }
 
-    val numOfLines = Files.lines(Paths.get(file.toURI())).count()
+    val numOfLines: Long = Files.lines(Paths.get(file.toURI())).let {
+        val lines = it.count()
+        it.close()
+        lines
+    }
     var lineNumber: Long = 0
     private val reader = file.bufferedReader()
 
