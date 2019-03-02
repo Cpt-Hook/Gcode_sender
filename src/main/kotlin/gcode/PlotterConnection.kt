@@ -5,7 +5,6 @@ import javafx.concurrent.Task
 import ui.MyViewController
 import java.io.BufferedReader
 import java.io.BufferedWriter
-import java.io.File
 import java.io.IOException
 import java.lang.Exception
 import java.net.Socket
@@ -14,7 +13,7 @@ class PlotterConnection(
     private val controller: MyViewController,
     private val ip: String,
     private val port: Int,
-    private val file: File,
+    private val gcodeList: List<GCode?>,
     private val enableFans: Boolean
 ) :
     Task<Any>() {
@@ -40,7 +39,7 @@ class PlotterConnection(
         writer.write(line)
         writer.flush()
         val response = reader.readLine()
-        if(checkAnswer && !answerRegex.matches(response)){
+        if (checkAnswer && !answerRegex.matches(response)) {
             throw IllegalAnswerException("Answer \"$response\" does not match the expected answer")
         }
     }
@@ -51,44 +50,51 @@ class PlotterConnection(
             val reader = it.getInputStream().bufferedReader()
 
             try {
+                println("Starting streaming, sending enable motors command")
+
                 sendLine(GcodeParser.enableMotorsCommand, writer, reader, true)
                 if (enableFans) {
                     sendLine(GcodeParser.enableFansCommand, writer, reader, true)
                 }
 
-                GcodeParser(file).use { gcodeParser ->
-                    for (line in gcodeParser) {
-                        if (isCancelled) {
-                            break
-                        }
-                        sendLine(line, writer, reader, true)
-
-                        updateProgress(gcodeParser.lineNumber, gcodeParser.numOfLines)
-                        updateMessage("(${gcodeParser.lineNumber}/${gcodeParser.numOfLines})")
+                gcodeList.forEachIndexed { index, gcode ->
+                    if (isCancelled) {
+                        return@forEachIndexed
                     }
+
+                    if (gcode != null) {
+                        sendLine(gcode.stringify(), writer, reader, true)
+                    }
+
+                    updateProgress(index.toLong() + 1, gcodeList.size.toLong())
+                    updateMessage("(${index + 1}/${gcodeList.size})")
                 }
-            } catch(e: IllegalAnswerException){
+            } catch (e: IllegalAnswerException) {
+                // TODO popup
                 System.err.println(e.message)
-            } catch(e: IOException) {
+            } catch (e: IOException) {
+                // TODO popup
                 e.printStackTrace()
-            }
-            finally {
+            } finally {
+                println("Finished streaming, sending reset command")
                 sendLine(GcodeParser.resetCommand, writer, reader, false)
             }
         }
     }
 
     private fun connect(): Boolean {
-
         println("Connecting to: \"$ip:$port\"")
+
         try {
             socket = Socket(ip, port)
 
         } catch (e: IOException) {
-            println("Could not connect:")
+            // TODO popup
+            println("Could not connect")
             System.err.println(e.message)
         } catch (e: IllegalArgumentException) {
-            println("Port \"$port\" is out of range:")
+            // TODO popup
+            println("Port \"$port\" is out of range")
             System.err.println(e.message)
         } finally {
             if (socket?.isConnected == true) {
@@ -100,6 +106,7 @@ class PlotterConnection(
 
     private fun disconnect() {
         println("Disconnecting from \"$ip:$port\"")
+
         socket?.close()
         socket = null
     }

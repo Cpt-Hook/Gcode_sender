@@ -2,41 +2,78 @@ package gcode
 
 import java.io.Closeable
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.lang.Exception
+import java.lang.NumberFormatException
 
-class GcodeParser(val file: File) : Iterable<String>, Iterator<String>, Closeable {
+typealias GCode = Map<Char, Float>
 
-    init{
-        println("Opening file \"${file.name}\"")
+fun GCode.stringify(): String {
+    return this.toString() + "\n"
+}
+
+class GcodeParser(private val gcodeFile: File) : Iterable<GCode?>, Iterator<GCode?>, Closeable {
+
+    init {
+        println("Opening file \"${gcodeFile.name}\"")
     }
 
-    val numOfLines: Long = Files.lines(Paths.get(file.toURI())).let {
-        val lines = it.count()
-        it.close()
-        lines
+    private val reader = gcodeFile.bufferedReader()
+    private var nextLine = reader.readLine()
+    private var iteratorAvailable = true
+
+    private fun parseGcode(line: String?): GCode? {
+        if (line == null) {
+            return null
+        }
+        val gcodeMap: MutableMap<Char, Float> = mutableMapOf()
+
+        if (line.startsWith('%')) {
+            return null
+        }
+
+        var gcodeLine = line.replace(whiteSpaceRegex, "")
+        gcodeLine = gcodeLine.replace(bracketCommentsRegex, "")
+        gcodeLine = gcodeLine.replace(semicolonCommentsRegex, "")
+
+        if (gcodeLine.isEmpty()) {
+            return null
+        }
+        gcodeLine = gcodeLine.toUpperCase()
+
+        try {
+            val numbers = gcodeLine.substring(1).split(letterRegex).map { if (it == "") 0f else it.toFloat() }
+
+            var i = 0
+            for (char in gcodeLine) {
+                if (char.isLetter()) {
+                    gcodeMap[char] = numbers[i++]
+                }
+            }
+        } catch (e: NumberFormatException) {
+            throw InvalidGcodeException(line)
+        }
+        return gcodeMap
     }
-    var lineNumber: Long = 0
-    private val reader = file.bufferedReader()
 
-    override fun hasNext() = lineNumber < numOfLines
-
-    override fun next(): String {
-        lineNumber++
-        val nextLine = reader.readLine()
-        return parseGcode(nextLine)
+    override fun iterator(): Iterator<GCode?> {
+        if (iteratorAvailable) {
+            iteratorAvailable = false
+            return this
+        } else {
+            throw IteratorNotAvailableException("Iterator can be created only once for an instance of this class")
+        }
     }
 
-    private fun parseGcode(gcode: String): String {
-        return gcode + "\n"
-    }
+    override fun hasNext() = nextLine != null
 
-    override fun iterator(): Iterator<String> {
-        return this
+    override fun next(): GCode? {
+        val gcode: GCode? = parseGcode(nextLine)
+        nextLine = reader.readLine()
+        return gcode
     }
 
     override fun close() {
-        println("Closing file \"${file.name}\"")
+        println("Closing file \"${gcodeFile.name}\"")
         reader.close()
     }
 
@@ -45,6 +82,15 @@ class GcodeParser(val file: File) : Iterable<String>, Iterator<String>, Closeabl
         const val enableFansCommand = "F1\n"
         const val disableFansCommand = "F0\n"
         const val resetCommand = "R\n"
+
+        private val whiteSpaceRegex = Regex("\\s")
+        private val semicolonCommentsRegex = Regex(";.*")
+        private val bracketCommentsRegex = Regex("\\(.*?\\)")
+        private val letterRegex = Regex("[A-Za-z]")
     }
 
+    private class IteratorNotAvailableException(message: String) : Exception(message)
 }
+
+class InvalidGcodeException(gcode: String) : Exception("Invalid gcode: \"$gcode\"")
+

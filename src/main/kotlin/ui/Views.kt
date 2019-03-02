@@ -36,7 +36,7 @@ class MenuView : MyView() {
                 item("Open").action {
                     val files = chooseFile(
                         "Select a gcode file",
-                        arrayOf(FileChooser.ExtensionFilter("Gcode files (.gcode, .nc)", "*")),
+                        arrayOf(FileChooser.ExtensionFilter("Gcode files (.gcode, .nc, .ngc)", "*")),
                         FileChooserMode.Single,
                         null
                     )
@@ -115,12 +115,12 @@ class LeftView : MyView() {
                             textFill = Color.RED
                         }
                         controller.connectedProperty.addListener { _, _, connected ->
-                            if(connected) {
+                            if (connected) {
                                 style {
                                     textFill = Color.GREEN
                                 }
                                 text = "CONNECTED"
-                            }else{
+                            } else {
                                 style {
                                     textFill = Color.RED
                                 }
@@ -178,7 +178,7 @@ class BottomView : MyView() {
                     maxWidthProperty().bind(this@hbox.widthProperty())
                     progressProperty().bind(controller.progressPercentProperty)
                 }
-                label{
+                label {
                     textProperty().bind(controller.progressLinesProperty)
                 }
 
