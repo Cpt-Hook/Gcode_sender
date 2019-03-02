@@ -21,6 +21,7 @@ abstract class MyView(title: String? = null, icon: Node? = null) : View(title, i
 
 class MainView : MyView("Gcode_sender") {
     override val root = borderpane {
+        primaryStage.onCloseRequest = controller.closeRequestHandler
         top<MenuView>()
         left<LeftView>()
         center<CenterView>()
@@ -175,11 +176,14 @@ class BottomView : MyView() {
                 progressbar {
                     hgrow = Priority.ALWAYS
                     maxWidthProperty().bind(this@hbox.widthProperty())
-                    progressProperty().bind(controller.progressValueProperty)
+                    progressProperty().bind(controller.progressPercentProperty)
+                }
+                label{
+                    textProperty().bind(controller.progressLinesProperty)
                 }
 
                 label {
-                    textProperty().bindBidirectional(controller.progressValueProperty, ProgressStringConverter())
+                    textProperty().bindBidirectional(controller.progressPercentProperty, ProgressStringConverter())
                 }
             }
         }

@@ -5,12 +5,13 @@ import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ChangeListener
+import javafx.event.EventHandler
 import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
+import javafx.stage.WindowEvent
 import tornadofx.Controller
 import tornadofx.singleAssign
 import java.io.File
-import java.lang.NumberFormatException
 
 
 class MyViewController : Controller() {
@@ -20,8 +21,13 @@ class MyViewController : Controller() {
         get() = canvas.graphicsContext2D
 
     val resizeHandler: ChangeListener<Number> = ChangeListener { _, _, _ -> renderCanvas() }
+    val closeRequestHandler = EventHandler<WindowEvent> {
+        println("Closing")
+        connection?.cancel()
+    }
 
-    val progressValueProperty = SimpleDoubleProperty(0.0)
+    val progressPercentProperty = SimpleDoubleProperty(0.0)
+    val progressLinesProperty = SimpleStringProperty("")
     val fileNameProperty = SimpleStringProperty("choose a file")
     val ipAddressProperty =  SimpleStringProperty()
     val portProperty =  SimpleStringProperty()
@@ -30,7 +36,7 @@ class MyViewController : Controller() {
 
     var gcodeFile: File? = null
 
-    private var connection: PlotterConnection? = null
+    var connection: PlotterConnection? = null
 
 
     private fun renderCanvas() {
@@ -58,15 +64,14 @@ class MyViewController : Controller() {
         }
 
         try{
-            val ip = ipAddressProperty.value
-            val port = portProperty.value.toInt()
+            val ip = ipAddressProperty.value.trim()
+            val port = portProperty.value.trim().toInt()
 
             connection = PlotterConnection(this, ip, port, gcodeFile!!, fansProperty.value)
-            progressValueProperty.bind(connection?.progressProperty())
+            progressLinesProperty.bind(connection?.messageProperty())
+            progressPercentProperty.bind(connection?.progressProperty())
 
-            Thread(connection).apply {
-                isDaemon = true
-            }.start()
+            Thread(connection).apply { isDaemon = false }.start()
 
         } catch(e: NumberFormatException) {
             println("Port not a number: ${portProperty.value}")
