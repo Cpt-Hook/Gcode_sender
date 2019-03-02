@@ -1,26 +1,25 @@
 package gcode
 
+import java.io.Closeable
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 
-class GcodeParser(file: File) : Iterable<String>, Iterator<String> {
+class GcodeParser(val file: File) : Iterable<String>, Iterator<String>, Closeable {
+
+    init{
+        println("Opening file \"${file.name}\"")
+    }
 
     val numOfLines = Files.lines(Paths.get(file.toURI())).count()
     var lineNumber: Long = 0
     private val reader = file.bufferedReader()
-
 
     override fun hasNext() = lineNumber < numOfLines
 
     override fun next(): String {
         lineNumber++
         val nextLine = reader.readLine()
-
-        if(lineNumber == numOfLines){
-            reader.close()
-        }
-
         return parseGcode(nextLine)
     }
 
@@ -32,6 +31,10 @@ class GcodeParser(file: File) : Iterable<String>, Iterator<String> {
         return this
     }
 
+    override fun close() {
+        println("Closing file \"${file.name}\"")
+        reader.close()
+    }
 
     companion object {
         const val enableMotorsCommand = "E1\n"

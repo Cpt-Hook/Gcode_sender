@@ -56,19 +56,23 @@ class PlotterConnection(
                     sendLine(GcodeParser.enableFansCommand, writer, reader, true)
                 }
 
-                val gcodeParser = GcodeParser(file)
+                GcodeParser(file).use { gcodeParser ->
+                    for (line in gcodeParser) {
+                        if (isCancelled) {
+                            break
+                        }
+                        sendLine(line, writer, reader, true)
 
-                for (line in gcodeParser) {
-                    if (isCancelled) {
-                        break
+                        updateProgress(gcodeParser.lineNumber, gcodeParser.numOfLines)
+                        updateMessage("(${gcodeParser.lineNumber}/${gcodeParser.numOfLines})")
                     }
-                    sendLine(line, writer, reader, true)
-                    updateProgress(gcodeParser.lineNumber, gcodeParser.numOfLines)
-                    updateMessage("(${gcodeParser.lineNumber}/${gcodeParser.numOfLines})")
                 }
             } catch(e: IllegalAnswerException){
                 System.err.println(e.message)
-            } finally {
+            } catch(e: IOException) {
+                e.printStackTrace()
+            }
+            finally {
                 sendLine(GcodeParser.resetCommand, writer, reader, false)
             }
         }
@@ -76,7 +80,7 @@ class PlotterConnection(
 
     private fun connect(): Boolean {
 
-        println("Connecting to: $ip:$port")
+        println("Connecting to: \"$ip:$port\"")
         try {
             socket = Socket(ip, port)
 
@@ -95,7 +99,7 @@ class PlotterConnection(
     }
 
     private fun disconnect() {
-        println("Disconnecting from $ip:$port")
+        println("Disconnecting from \"$ip:$port\"")
         socket?.close()
         socket = null
     }
