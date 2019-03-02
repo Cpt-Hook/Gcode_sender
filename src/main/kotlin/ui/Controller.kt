@@ -1,9 +1,6 @@
 package ui
 
-import gcode.GCode
-import gcode.GcodeParser
-import gcode.InvalidGcodeException
-import gcode.PlotterConnection
+import gcode.*
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.beans.property.SimpleStringProperty
@@ -45,11 +42,6 @@ class MyViewController : Controller() {
 
     private fun renderCanvas() {
         g.clearRect(0.0, 0.0, canvas.width, canvas.height)
-        g.beginPath()
-        g.moveTo(50.0, 50.0)
-        g.lineTo(100.0, 100.0)
-        g.lineTo(150.0, 10.0)
-        g.stroke()
     }
 
     fun chooseFile(files: List<File>) {
