@@ -35,9 +35,9 @@ class MyViewController : Controller() {
     val connectedProperty = SimpleBooleanProperty(false)
     val fansProperty = SimpleBooleanProperty()
 
-    var gcodeList: List<GCode>? = null
+    private var gcodeList: List<GCode>? = null
 
-    var connection: PlotterConnection? = null
+    private var connection: PlotterConnection? = null
 
 
     private fun renderCanvas() {
