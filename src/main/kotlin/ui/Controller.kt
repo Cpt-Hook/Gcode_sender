@@ -17,10 +17,8 @@ import java.io.File
 class MyViewController : Controller() {
 
     var canvas: Canvas by singleAssign()
-    private val g: GraphicsContext
-        get() = canvas.graphicsContext2D
 
-    val resizeHandler: ChangeListener<Number> = ChangeListener { _, _, _ -> renderCanvas() }
+    val resizeHandler: ChangeListener<Number> = ChangeListener { _, _, _ -> canvasRenderer.render() }
     val closeRequestHandler = EventHandler<WindowEvent> {
         println("Closing")
         connection?.cancel()
@@ -38,10 +36,8 @@ class MyViewController : Controller() {
 
     private var connection: PlotterConnection? = null
 
+    private val canvasRenderer = CanvasRenderer(this)
 
-    private fun renderCanvas() {
-        g.clearRect(0.0, 0.0, canvas.width, canvas.height)
-    }
 
     fun openFile(files: List<File>) {
         if (files.isEmpty()) {
@@ -54,7 +50,11 @@ class MyViewController : Controller() {
             gcodeList = GcodeParser(gcodeFile).use {
                 it.iterator().asSequence().filterNotNull().toList()
             }
+
             println("${gcodeList?.size} gcode lines parsed")
+            gcodeList?.let {canvasRenderer.generatePointsFromGcode(it)}
+            println("Visualization generated")
+
         } catch (e: InvalidGcodeException) {
             System.err.println(e.message)
             // TODO popup
@@ -64,13 +64,14 @@ class MyViewController : Controller() {
 
     fun closeFile() {
         gcodeList = null
+        canvasRenderer.deletePoints()
         fileNameProperty.value = "choose a file"
     }
 
     fun saveFile(files: List<File>) {
-        if(files.isEmpty()) {
+        if (files.isEmpty()) {
             return
-        }else if(gcodeList == null) {
+        } else if (gcodeList == null) {
             println("choose a file")
             return
         }

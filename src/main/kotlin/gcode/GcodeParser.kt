@@ -73,6 +73,9 @@ class GcodeParser(private val gcodeFile: File) : Iterable<GcodeCommand?>, Iterat
     }
 
     companion object {
+        const val maxWidthMM: Double = 40.0
+        const val maxHeightMM: Double = 40.0
+
         const val enableMotorsCommand = "E1\n"
         const val enableFansCommand = "F1\n"
         const val disableFansCommand = "F0\n"
