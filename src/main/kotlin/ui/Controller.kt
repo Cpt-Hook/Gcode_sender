@@ -44,7 +44,7 @@ class MyViewController : Controller() {
         g.clearRect(0.0, 0.0, canvas.width, canvas.height)
     }
 
-    fun chooseFile(files: List<File>) {
+    fun openFile(files: List<File>) {
         if (files.isEmpty()) {
             return
         }
@@ -66,6 +66,26 @@ class MyViewController : Controller() {
     fun closeFile() {
         gcodeList = null
         fileNameProperty.value = "choose a file"
+    }
+
+    fun saveFile(files: List<File>) {
+        if(files.isEmpty()) {
+            return
+        }else if(gcodeList == null) {
+            println("choose a file")
+            return
+        }
+
+        val saveFile = files[0]
+        println("Saving gcode to ${saveFile.path}")
+
+        saveFile.bufferedWriter().use { writer ->
+            gcodeList?.forEach {
+                writer.write(it.stringify())
+            }
+            writer.newLine()
+        }
+        println("Saved successfully")
     }
 
     fun startStreaming() {

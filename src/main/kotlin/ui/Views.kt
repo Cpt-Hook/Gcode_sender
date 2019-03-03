@@ -38,14 +38,22 @@ class MenuView : MyView() {
                         "Select a gcode file",
                         arrayOf(FileChooser.ExtensionFilter("Gcode files (.gcode, .nc, .ngc)", "*")),
                         FileChooserMode.Single,
-                        null
+                        primaryStage
                     )
-                    controller.chooseFile(files)
+                    controller.openFile(files)
                 }
                 item("Close").action {
                     controller.closeFile()
                 }
-                item("Save")
+                item("Save").action {
+                    val files = chooseFile(
+                        "Select a file to save",
+                        arrayOf(FileChooser.ExtensionFilter("Gcode file (.gcode)", ".gcode")),
+                        FileChooserMode.Save,
+                        primaryStage
+                    )
+                    controller.saveFile(files)
+                }
             }
             menu("Other") {
                 item("Info")
