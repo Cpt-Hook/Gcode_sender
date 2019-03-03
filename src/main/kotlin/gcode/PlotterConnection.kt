@@ -13,7 +13,7 @@ class PlotterConnection(
     private val controller: MyViewController,
     private val ip: String,
     private val port: Int,
-    private val gcodeList: List<GCode?>,
+    private val gcodeList: List<GcodeCommand?>,
     private val enableFans: Boolean
 ) :
     Task<Any>() {

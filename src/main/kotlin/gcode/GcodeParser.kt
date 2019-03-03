@@ -6,7 +6,7 @@ import java.lang.Exception
 import java.lang.NumberFormatException
 
 
-class GcodeParser(private val gcodeFile: File) : Iterable<GCode?>, Iterator<GCode?>, Closeable {
+class GcodeParser(private val gcodeFile: File) : Iterable<GcodeCommand?>, Iterator<GcodeCommand?>, Closeable {
 
     init {
         println("Opening file \"${gcodeFile.name}\"")
@@ -16,7 +16,7 @@ class GcodeParser(private val gcodeFile: File) : Iterable<GCode?>, Iterator<GCod
     private var nextLine = reader.readLine()
     private var iteratorAvailable = true
 
-    private fun parseGcode(line: String?): GCode? {
+    private fun parseGcode(line: String?): GcodeCommand? {
         if (line == null) {
             return null
         }
@@ -50,7 +50,7 @@ class GcodeParser(private val gcodeFile: File) : Iterable<GCode?>, Iterator<GCod
         return gcodeMap
     }
 
-    override fun iterator(): Iterator<GCode?> {
+    override fun iterator(): Iterator<GcodeCommand?> {
         if (iteratorAvailable) {
             iteratorAvailable = false
             return this
@@ -61,8 +61,8 @@ class GcodeParser(private val gcodeFile: File) : Iterable<GCode?>, Iterator<GCod
 
     override fun hasNext() = nextLine != null
 
-    override fun next(): GCode? {
-        val gcode: GCode? = parseGcode(nextLine)
+    override fun next(): GcodeCommand? {
+        val gcode: GcodeCommand? = parseGcode(nextLine)
         nextLine = reader.readLine()
         return gcode
     }

@@ -8,7 +8,6 @@ import javafx.beans.value.ChangeListener
 import javafx.event.EventHandler
 import javafx.scene.canvas.Canvas
 import javafx.scene.canvas.GraphicsContext
-import javafx.scene.paint.Color
 import javafx.stage.WindowEvent
 import tornadofx.Controller
 import tornadofx.singleAssign
@@ -35,7 +34,7 @@ class MyViewController : Controller() {
     val connectedProperty = SimpleBooleanProperty(false)
     val fansProperty = SimpleBooleanProperty()
 
-    private var gcodeList: List<GCode>? = null
+    private var gcodeList: List<GcodeCommand>? = null
 
     private var connection: PlotterConnection? = null
 

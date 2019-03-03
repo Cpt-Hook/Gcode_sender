@@ -2,11 +2,11 @@ package gcode
 
 import java.lang.StringBuilder
 
-typealias GCode = Map<Char, Float>
+typealias GcodeCommand = Map<Char, Float>
 
 const val decimalPlaces: Int = 3
 
-fun GCode.stringify(): String {
+fun GcodeCommand.stringify(): String {
     val builder = StringBuilder(this.size * 6) // one letter char and max 5 chars for number
 
     val skipKeys = listOf('G', 'X', 'Y', 'Z', 'F')
@@ -29,7 +29,7 @@ fun GCode.stringify(): String {
     return builder.toString()
 }
 
-fun StringBuilder.appendField(gcode: GCode, key: Char) {
+fun StringBuilder.appendField(gcode: GcodeCommand, key: Char) {
     if(gcode.containsKey(key)) {
         append(key)
         append(gcode.getValue(key).roundTo(decimalPlaces))

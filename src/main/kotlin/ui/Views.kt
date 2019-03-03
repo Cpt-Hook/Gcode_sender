@@ -36,7 +36,7 @@ class MenuView : MyView() {
                 item("Open").action {
                     val files = chooseFile(
                         "Select a gcode file",
-                        arrayOf(FileChooser.ExtensionFilter("Gcode files (.gcode, .nc, .ngc)", "*")),
+                        arrayOf(FileChooser.ExtensionFilter("GcodeCommand files (.gcode, .nc, .ngc)", "*")),
                         FileChooserMode.Single,
                         primaryStage
                     )
@@ -48,7 +48,7 @@ class MenuView : MyView() {
                 item("Save").action {
                     val files = chooseFile(
                         "Select a file to save",
-                        arrayOf(FileChooser.ExtensionFilter("Gcode file (.gcode)", ".gcode")),
+                        arrayOf(FileChooser.ExtensionFilter("GcodeCommand file (.gcode)", ".gcode")),
                         FileChooserMode.Save,
                         primaryStage
                     )
