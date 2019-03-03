@@ -8,6 +8,9 @@ import java.lang.NumberFormatException
 
 class GcodeParser(private val gcodeFile: File) : Iterable<GcodeCommand?>, Iterator<GcodeCommand?>, Closeable {
 
+    private var xPos: Float = 0f
+    private var yPos: Float = 0f
+
     init {
         println("Opening file \"${gcodeFile.name}\"")
     }
@@ -50,6 +53,20 @@ class GcodeParser(private val gcodeFile: File) : Iterable<GcodeCommand?>, Iterat
         return gcodeMap
     }
 
+    private fun GcodeCommand.setPos() {
+        if (containsKey('G')) {
+            val gCommand = getValue('G')
+            if (gCommand in 0.0..3.0) {
+                if (containsKey('X')) {
+                    xPos = this.getValue('X')
+                }
+                if (containsKey('Y')) {
+                    yPos = this.getValue('Y')
+                }
+            }
+        }
+    }
+
     override fun iterator(): Iterator<GcodeCommand?> {
         if (iteratorAvailable) {
             iteratorAvailable = false
@@ -62,7 +79,14 @@ class GcodeParser(private val gcodeFile: File) : Iterable<GcodeCommand?>, Iterat
     override fun hasNext() = nextLine != null
 
     override fun next(): GcodeCommand? {
+        // TODO check if expanded line command are waiting
         val gcode: GcodeCommand? = parseGcode(nextLine)
+        gcode?.let {
+            if (it.containsKey('G') && (it['G'] == 2f || it['G'] == 3f)) {
+                // TODO expand line
+            }
+            it.setPos()
+        }
         nextLine = reader.readLine()
         return gcode
     }
