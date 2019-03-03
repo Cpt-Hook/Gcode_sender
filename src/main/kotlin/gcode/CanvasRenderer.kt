@@ -45,7 +45,7 @@ class CanvasRenderer(private val controller: MyViewController) {
                 if(gcode.containsKey('Y')){
                     newY = gcode.getValue('Y')
                 }
-                newPoints.add(Point(newX, newY, penDown))
+                newPoints.add(Point(newX,  maxHeightMM - newY, penDown))
             }
         }
 
