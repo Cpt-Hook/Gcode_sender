@@ -47,12 +47,10 @@ class MyViewController : Controller() {
         fileNameProperty.value = gcodeFile.name
 
         try {
-            gcodeList = GcodeParser(gcodeFile).use {
-                it.iterator().asSequence().filterNotNull().toList()
-            }
+            gcodeList = GcodeParser(gcodeFile).getGcodeList()
 
             println("${gcodeList?.size} gcode lines parsed")
-            gcodeList?.let {canvasRenderer.generatePointsFromGcode(it)}
+            gcodeList?.let { canvasRenderer.generatePointsFromGcode(it) }
             println("Visualization generated")
 
         } catch (e: InvalidGcodeException) {

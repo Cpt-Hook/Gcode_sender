@@ -6,7 +6,7 @@ import java.lang.Exception
 import java.lang.NumberFormatException
 
 
-class GcodeParser(private val gcodeFile: File) : Iterable<GcodeCommand?>, Iterator<GcodeCommand?>, Closeable {
+class GcodeParser(private val gcodeFile: File) {
 
     private var xPos: Float = 0f
     private var yPos: Float = 0f
@@ -16,8 +16,34 @@ class GcodeParser(private val gcodeFile: File) : Iterable<GcodeCommand?>, Iterat
     }
 
     private val reader = gcodeFile.bufferedReader()
-    private var nextLine = reader.readLine()
-    private var iteratorAvailable = true
+
+    private val gcodeList = ArrayList<GcodeCommand>()
+
+    init {
+        try {
+            reader.forEachLine { nextLine ->
+                val gcode = parseGcode(nextLine)
+
+                gcode?.let {
+                    if (it.isArc()) {
+                        try {
+                            gcodeList.addAll(ArcExpander(it, xPos, yPos))
+                        } catch (e: NoSuchElementException) {
+                            throw InvalidGcodeException(nextLine)
+                        }
+                    } else {
+                        gcodeList.add(it)
+                    }
+
+                    it.setPos()
+                }
+            }
+        } finally {
+            close()
+        }
+    }
+
+    fun getGcodeList(): List<GcodeCommand> = gcodeList
 
     private fun parseGcode(line: String?): GcodeCommand? {
         if (line == null) {
@@ -67,31 +93,10 @@ class GcodeParser(private val gcodeFile: File) : Iterable<GcodeCommand?>, Iterat
         }
     }
 
-    override fun iterator(): Iterator<GcodeCommand?> {
-        if (iteratorAvailable) {
-            iteratorAvailable = false
-            return this
-        } else {
-            throw IteratorNotAvailableException("Iterator can be created only once for an instance of this class")
-        }
-    }
+    private fun GcodeCommand.isArc() = this.containsKey('G') && (this.getValue('G') == 2f || this.getValue('G') == 3f)
+    private fun GcodeCommand.isLine() = this.containsKey('G') && (this.getValue('G') == 0f || this.getValue('G') == 1f)
 
-    override fun hasNext() = nextLine != null
-
-    override fun next(): GcodeCommand? {
-        // TODO check if expanded line command are waiting
-        val gcode: GcodeCommand? = parseGcode(nextLine)
-        gcode?.let {
-            if (it.containsKey('G') && (it['G'] == 2f || it['G'] == 3f)) {
-                // TODO expand line
-            }
-            it.setPos()
-        }
-        nextLine = reader.readLine()
-        return gcode
-    }
-
-    override fun close() {
+    private fun close() {
         println("Closing file \"${gcodeFile.name}\"")
         reader.close()
     }
