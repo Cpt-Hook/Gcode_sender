@@ -115,8 +115,6 @@ class GcodeParser(private val gcodeFile: File) {
         private val bracketCommentsRegex = Regex("\\(.*?\\)")
         private val letterRegex = Regex("[A-Za-z]")
     }
-
-    private class IteratorNotAvailableException(message: String) : Exception(message)
 }
 
 class InvalidGcodeException(gcode: String) : Exception("Invalid gcode: \"$gcode\"")
