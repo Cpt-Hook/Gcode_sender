@@ -86,6 +86,8 @@ class MyViewController : Controller() {
     }
 
     fun startStreaming() {
+        connection?.cancel()
+
         if (gcodeList == null) {
             println("choose a file")
             return

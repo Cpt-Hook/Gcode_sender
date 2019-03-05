@@ -100,7 +100,7 @@ class PlotterConnection(
             println("Port \"$port\" is out of range")
             System.err.println(e.message)
         } finally {
-            if (socket?.isConnected == true) {
+            if (!isCancelled && socket?.isConnected == true) {
                 return true
             }
         }
