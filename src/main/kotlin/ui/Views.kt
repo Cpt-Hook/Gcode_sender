@@ -167,6 +167,31 @@ class CenterView : MyView() {
             }
             tab("Settings") {
                 this.isClosable = false
+                form {
+                    fieldset("Visualization") {
+                        field("Pen width") {
+                            slider(1, 10, 1) {
+                                isShowTickLabels = true
+                                isShowTickMarks = true
+                                minorTickCount = 0
+                                controller.penWidthProperty.bind(valueProperty())
+                                valueProperty().addListener { _, _, new ->
+                                    value = new.toInt().toDouble()
+                                }
+                                valueProperty().addListener(controller.penWidthHandler)
+                            }
+                            label {
+                                textProperty().bindBidirectional(controller.penWidthProperty, PenWidthStringConverter())
+                            }
+                        }
+                        field("Pen color") {
+                            colorpicker(color = Color.BLACK) {
+                                controller.colorProperty.bind(valueProperty())
+                                valueProperty().addListener(controller.colourHandler)
+                            }
+                        }
+                    }
+                }
             }
         }
 }

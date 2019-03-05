@@ -16,3 +16,13 @@ class ProgressStringConverter : StringConverter<Number>() {
         throw NotImplementedError()
     }
 }
+
+class PenWidthStringConverter : StringConverter<Number>() {
+    override fun toString(number: Number?): String {
+        return "${number?.toInt()}px"
+    }
+
+    override fun fromString(string: String?): Number {
+        throw NotImplementedError()
+    }
+}

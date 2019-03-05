@@ -3,11 +3,12 @@ package ui
 import gcode.*
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleDoubleProperty
+import javafx.beans.property.SimpleObjectProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.beans.value.ChangeListener
 import javafx.event.EventHandler
 import javafx.scene.canvas.Canvas
-import javafx.scene.canvas.GraphicsContext
+import javafx.scene.paint.Color
 import javafx.stage.WindowEvent
 import tornadofx.Controller
 import tornadofx.singleAssign
@@ -19,6 +20,12 @@ class MyViewController : Controller() {
     var canvas: Canvas by singleAssign()
 
     val resizeHandler: ChangeListener<Number> = ChangeListener { _, _, _ -> canvasRenderer.render() }
+
+    val penWidthHandler: ChangeListener<Number> = ChangeListener { _, _, newValue ->
+        canvasRenderer.penWidth = newValue as Double}
+
+    val colourHandler: ChangeListener<Color> = ChangeListener { _, _, color -> canvasRenderer.penColor = color }
+
     val closeRequestHandler = EventHandler<WindowEvent> {
         println("Closing")
         connection?.cancel()
@@ -31,6 +38,8 @@ class MyViewController : Controller() {
     val portProperty = SimpleStringProperty()
     val connectedProperty = SimpleBooleanProperty(false)
     val fansProperty = SimpleBooleanProperty()
+    val penWidthProperty = SimpleDoubleProperty(1.0)
+    val colorProperty= SimpleObjectProperty<Color>()
 
     private var gcodeList: List<GcodeCommand>? = null
 
