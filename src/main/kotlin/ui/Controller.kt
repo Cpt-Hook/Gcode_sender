@@ -1,10 +1,7 @@
 package ui
 
 import gcode.*
-import javafx.beans.property.SimpleBooleanProperty
-import javafx.beans.property.SimpleDoubleProperty
-import javafx.beans.property.SimpleObjectProperty
-import javafx.beans.property.SimpleStringProperty
+import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.event.EventHandler
 import javafx.scene.canvas.Canvas
@@ -22,7 +19,7 @@ class MyViewController : Controller() {
     val resizeHandler: ChangeListener<Number> = ChangeListener { _, _, _ -> canvasRenderer.render() }
 
     val penWidthHandler: ChangeListener<Number> = ChangeListener { _, _, newValue ->
-        canvasRenderer.penWidth = newValue as Double}
+        canvasRenderer.penWidth = newValue.toDouble()}
 
     val colourHandler: ChangeListener<Color> = ChangeListener { _, _, color -> canvasRenderer.penColor = color }
 
@@ -40,8 +37,10 @@ class MyViewController : Controller() {
     val fansProperty = SimpleBooleanProperty()
     val penWidthProperty = SimpleDoubleProperty(1.0)
     val colorProperty= SimpleObjectProperty<Color>()
+    val maxArcLengthProperty = SimpleFloatProperty(ArcExpander.maxArcLength)
 
     private var gcodeList: List<GcodeCommand>? = null
+    private var gcodeFile: File? = null
 
     private var connection: PlotterConnection? = null
 
@@ -52,24 +51,15 @@ class MyViewController : Controller() {
         if (files.isEmpty()) {
             return
         }
-        val gcodeFile = files[0]
-        fileNameProperty.value = gcodeFile.name
-
-        try {
-            gcodeList = GcodeParser(gcodeFile).getGcodeList()
-
-            println("${gcodeList?.size} gcode lines parsed")
-            gcodeList?.let { canvasRenderer.generatePointsFromGcode(it) }
-            println("Visualization generated")
-
-        } catch (e: InvalidGcodeException) {
-            System.err.println(e.message)
-            // TODO popup
-            closeFile()
+        gcodeFile = files[0]
+        gcodeFile?.let{
+            fileNameProperty.value = it.name
+            parseFile(it)
         }
     }
 
     fun closeFile() {
+        gcodeFile = null
         gcodeList = null
         canvasRenderer.deletePoints()
         fileNameProperty.value = "choose a file"
@@ -119,5 +109,25 @@ class MyViewController : Controller() {
 
     fun stopStreaming() {
         connection?.cancel()
+    }
+
+    fun maxArcLengthSelected(newArcLength: Float) {
+        ArcExpander.maxArcLength = newArcLength
+        gcodeFile?.let {parseFile(it)}
+    }
+
+    private fun parseFile(file: File) {
+        try {
+            gcodeList = GcodeParser(file).getGcodeList()
+
+            println("${gcodeList?.size} gcode lines parsed")
+            gcodeList?.let { canvasRenderer.generatePointsFromGcode(it) }
+            println("Visualization generated")
+
+        } catch (e: InvalidGcodeException) {
+            System.err.println(e.message)
+            // TODO popup
+            closeFile()
+        }
     }
 }

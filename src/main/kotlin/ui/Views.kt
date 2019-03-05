@@ -1,5 +1,7 @@
 package ui
 
+import gcode.ArcExpander
+import javafx.event.EventHandler
 import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.scene.Node
@@ -151,8 +153,8 @@ class CenterView : MyView() {
                 this.isClosable = false
 
                 pane {
-                    minWidth = 400.0
-                    minHeight = 400.0
+                    minWidth = 450.0
+                    minHeight = 450.0
 
                     canvas {
                         controller.canvas = this
@@ -170,24 +172,48 @@ class CenterView : MyView() {
                 form {
                     fieldset("Visualization") {
                         field("Pen width") {
-                            slider(1, 10, 1) {
-                                isShowTickLabels = true
-                                isShowTickMarks = true
-                                minorTickCount = 0
-                                controller.penWidthProperty.bind(valueProperty())
-                                valueProperty().addListener { _, _, new ->
-                                    value = new.toInt().toDouble()
+                            hbox(spacing = 10) {
+                                slider(1..10, 1) {
+                                    isShowTickLabels = true
+                                    isShowTickMarks = true
+                                    minorTickCount = 0
+                                    controller.penWidthProperty.bind(valueProperty())
+
+                                    valueProperty().addListener { _, _, new -> value = new.toInt().toDouble() }
+                                    valueProperty().addListener(controller.penWidthHandler)
                                 }
-                                valueProperty().addListener(controller.penWidthHandler)
-                            }
-                            label {
-                                textProperty().bindBidirectional(controller.penWidthProperty, PenWidthStringConverter())
+                                label {
+                                    textProperty().bindBidirectional(
+                                        controller.penWidthProperty,
+                                        PenWidthStringConverter()
+                                    )
+                                }
                             }
                         }
                         field("Pen color") {
                             colorpicker(color = Color.BLACK) {
                                 controller.colorProperty.bind(valueProperty())
                                 valueProperty().addListener(controller.colourHandler)
+                            }
+                        }
+                    }
+                    fieldset("Plotting") {
+                        field("Max expanded arc length") {
+                            hbox(spacing = 10) {
+                                slider(0.1..10.0, ArcExpander.maxArcLength) {
+                                    isShowTickLabels = true
+                                    isShowTickMarks = true
+                                    minorTickCount = 0
+
+                                    controller.maxArcLengthProperty.bind(valueProperty())
+                                    onMouseReleased = EventHandler { controller.maxArcLengthSelected(value.toFloat()) }
+                                }
+                                label {
+                                    textProperty().bindBidirectional(
+                                        controller.maxArcLengthProperty,
+                                        MaxArcLengthStringConverter()
+                                    )
+                                }
                             }
                         }
                     }

@@ -70,7 +70,7 @@ class ArcExpander(private val gcode: GcodeCommand, private val xStart: Float, pr
     }
 
     companion object {
-        var maxArcLength = 0.5f
+        var maxArcLength = 1f
     }
 
     private data class Point(val x: Float, var y: Float) {

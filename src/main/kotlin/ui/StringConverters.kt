@@ -26,3 +26,13 @@ class PenWidthStringConverter : StringConverter<Number>() {
         throw NotImplementedError()
     }
 }
+
+class MaxArcLengthStringConverter : StringConverter<Number>() {
+    override fun toString(number: Number?): String {
+        return "%.2fmm".format(number)
+    }
+
+    override fun fromString(string: String?): Number {
+        throw NotImplementedError()
+    }
+}
