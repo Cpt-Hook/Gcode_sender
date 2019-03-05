@@ -35,7 +35,7 @@ class CanvasRenderer(private val controller: MyViewController) {
         var newY = 0f
 
         for(gcode in gcodeList) {
-            if(gcode.containsKey('G') && (gcode['G'] == 0f || gcode['G'] == 1f)) {
+            if(gcode.isLine()) {
                 if(gcode.containsKey('Z')){
                     penDown = gcode.getValue('Z') < 0f
                 }

@@ -29,13 +29,13 @@ fun GcodeCommand.stringify(): String {
     return builder.toString()
 }
 
-fun StringBuilder.appendField(gcode: GcodeCommand, key: Char) {
+private fun StringBuilder.appendField(gcode: GcodeCommand, key: Char) {
     if(gcode.containsKey(key)) {
         append(key)
         append(gcode.getValue(key).roundTo(decimalPlaces))
     }
 }
 
-fun Float.roundTo(decimalPlaces: Int): String {
+private fun Float.roundTo(decimalPlaces: Int): String {
     return "%.${decimalPlaces}f".format(this)
 }

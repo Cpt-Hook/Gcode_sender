@@ -5,6 +5,9 @@ import java.lang.Exception
 import java.lang.NumberFormatException
 
 
+fun GcodeCommand.isArc() = this.containsKey('G') && (this.getValue('G') == 2f || this.getValue('G') == 3f)
+fun GcodeCommand.isLine() = this.containsKey('G') && (this.getValue('G') == 0f || this.getValue('G') == 1f)
+
 class GcodeParser(private val gcodeFile: File) {
 
     private var xPos: Float = 0f
@@ -58,7 +61,7 @@ class GcodeParser(private val gcodeFile: File) {
         gcodeLine = gcodeLine.replace(bracketCommentsRegex, "")
         gcodeLine = gcodeLine.replace(semicolonCommentsRegex, "")
 
-        if (gcodeLine.isEmpty()) {
+        if (gcodeLine.isBlank()) {
             return null
         }
         gcodeLine = gcodeLine.toUpperCase()
@@ -79,21 +82,15 @@ class GcodeParser(private val gcodeFile: File) {
     }
 
     private fun GcodeCommand.setPos() {
-        if (containsKey('G')) {
-            val gCommand = getValue('G')
-            if (gCommand in 0.0..3.0) {
-                if (containsKey('X')) {
-                    xPos = this.getValue('X')
-                }
-                if (containsKey('Y')) {
-                    yPos = this.getValue('Y')
-                }
+        if (isLine() || isArc()) {
+            if (containsKey('X')) {
+                xPos = this.getValue('X')
+            }
+            if (containsKey('Y')) {
+                yPos = this.getValue('Y')
             }
         }
     }
-
-    private fun GcodeCommand.isArc() = this.containsKey('G') && (this.getValue('G') == 2f || this.getValue('G') == 3f)
-    private fun GcodeCommand.isLine() = this.containsKey('G') && (this.getValue('G') == 0f || this.getValue('G') == 1f)
 
     private fun close() {
         println("Closing file \"${gcodeFile.name}\"")
