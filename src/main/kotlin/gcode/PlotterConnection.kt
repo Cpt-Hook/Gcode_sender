@@ -38,7 +38,8 @@ class PlotterConnection(
     private fun sendLine(line: String, writer: BufferedWriter, reader: BufferedReader, checkAnswer: Boolean) {
         writer.write(line)
         writer.flush()
-        val response = reader.readLine()
+
+        val response = reader.readLine() ?: throw IOException("Socket closed unexpectedly")
         if (checkAnswer && !answerRegex.matches(response)) {
             throw IllegalAnswerException("Answer \"$response\" does not match the expected answer")
         }
@@ -50,35 +51,36 @@ class PlotterConnection(
             val reader = it.getInputStream().bufferedReader()
 
             try {
-                println("Starting streaming, sending enable motors command")
+                try {
+                    println("Starting streaming, sending enable motors command")
 
-                sendLine(GcodeParser.enableMotorsCommand, writer, reader, true)
-                if (enableFans) {
-                    println("Sending enable fans command")
-                    sendLine(GcodeParser.enableFansCommand, writer, reader, true)
-                }
-
-                gcodeList.forEachIndexed { index, gcode ->
-                    if (isCancelled) {
-                        return@forEachIndexed
+                    sendLine(GcodeParser.enableMotorsCommand, writer, reader, true)
+                    if (enableFans) {
+                        println("Sending enable fans command")
+                        sendLine(GcodeParser.enableFansCommand, writer, reader, true)
                     }
 
-                    if (gcode != null) {
-                        sendLine(gcode.stringify(), writer, reader, true)
-                    }
+                    gcodeList.forEachIndexed { index, gcode ->
+                        if (isCancelled) {
+                            return@forEachIndexed
+                        }
 
-                    updateProgress(index.toLong() + 1, gcodeList.size.toLong())
-                    updateMessage("(${index + 1}/${gcodeList.size})")
+                        if (gcode != null) {
+                            sendLine(gcode.stringify(), writer, reader, true)
+                        }
+
+                        updateProgress(index.toLong() + 1, gcodeList.size.toLong())
+                        updateMessage("(${index + 1}/${gcodeList.size})")
+                    }
+                } catch (e: IllegalAnswerException) {
+                    // TODO popup
+                    System.err.println(e.message)
+                } finally {
+                    println("Finished streaming, sending reset command")
+                    sendLine(GcodeParser.resetCommand, writer, reader, false)
                 }
-            } catch (e: IllegalAnswerException) {
-                // TODO popup
-                System.err.println(e.message)
             } catch (e: IOException) {
-                // TODO popup
-                e.printStackTrace()
-            } finally {
-                println("Finished streaming, sending reset command")
-                sendLine(GcodeParser.resetCommand, writer, reader, false)
+                System.err.println(e.message)   //socket closed from the other side
             }
         }
     }
