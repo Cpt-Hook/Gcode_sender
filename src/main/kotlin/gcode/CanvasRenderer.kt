@@ -13,6 +13,9 @@ class CanvasRenderer(private val controller: MyViewController) {
 
     private var points: List<Point>? = null
 
+    private var xPos = 0f
+    private var yPos = 0f
+
     var penWidth: Double
         get() = g.lineWidth
         set(value) {
@@ -31,8 +34,6 @@ class CanvasRenderer(private val controller: MyViewController) {
         val newPoints: ArrayList<Point> = ArrayList()
 
         var penDown = false
-        var newX = 0f
-        var newY = 0f
 
         for(gcode in gcodeList) {
             if(gcode.isLine()) {
@@ -40,12 +41,12 @@ class CanvasRenderer(private val controller: MyViewController) {
                     penDown = gcode.getValue('Z') < 0f
                 }
                 if(gcode.containsKey('X')){
-                    newX = gcode.getValue('X')
+                    xPos = gcode.getValue('X')
                 }
                 if(gcode.containsKey('Y')){
-                    newY = gcode.getValue('Y')
+                    yPos = gcode.getValue('Y')
                 }
-                newPoints.add(Point(newX,  maxHeightMM - newY, penDown))
+                newPoints.add(Point(xPos,  maxHeightMM - yPos, penDown))
             }
         }
 
