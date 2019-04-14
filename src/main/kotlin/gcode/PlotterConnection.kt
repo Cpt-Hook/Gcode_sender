@@ -11,6 +11,7 @@ import java.lang.Exception
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.SocketAddress
+import java.net.SocketTimeoutException
 
 class PlotterConnection(
     private val controller: MyViewController,
@@ -101,7 +102,7 @@ class PlotterConnection(
             socket = Socket()
             socket?.connect(InetSocketAddress(ip, port), 2500)
 
-        } catch (e: IOException) {
+        } catch (e: SocketTimeoutException) {
             println("Could not connect")
             System.err.println(e.message)
             Platform.runLater {
@@ -119,6 +120,16 @@ class PlotterConnection(
                 alert.title = "Error"
                 alert.headerText = null
                 alert.contentText = "The port provided is out of range."
+                alert.showAndWait()
+            }
+        } catch (e: IOException) {
+            println("Could not connect")
+            System.err.println(e.message)
+            Platform.runLater {
+                val alert = Alert(Alert.AlertType.ERROR)
+                alert.title = "Error"
+                alert.headerText = null
+                alert.contentText = "Could not connect to the plotter. (invalid address?)"
                 alert.showAndWait()
             }
         } finally {

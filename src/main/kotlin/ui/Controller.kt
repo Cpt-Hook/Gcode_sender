@@ -71,6 +71,11 @@ class MyViewController : Controller() {
             return
         } else if (gcodeList == null) {
             println("choose a file")
+            val alert = Alert(Alert.AlertType.INFORMATION)
+            alert.title = "Info"
+            alert.headerText = null
+            alert.contentText = "You need to choose a g-code file first. (from the File menu on the top)"
+            alert.showAndWait()
             return
         }
 
@@ -91,6 +96,11 @@ class MyViewController : Controller() {
 
         if (gcodeList == null) {
             println("choose a file")
+            val alert = Alert(Alert.AlertType.INFORMATION)
+            alert.title = "Info"
+            alert.headerText = null
+            alert.contentText = "You need to choose a g-code file first. (from the File menu on the top)"
+            alert.showAndWait()
             return
         }
 
