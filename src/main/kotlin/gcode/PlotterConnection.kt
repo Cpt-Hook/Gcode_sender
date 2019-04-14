@@ -2,12 +2,15 @@ package gcode
 
 import javafx.application.Platform
 import javafx.concurrent.Task
+import javafx.scene.control.Alert
 import ui.MyViewController
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.IOException
 import java.lang.Exception
+import java.net.InetSocketAddress
 import java.net.Socket
+import java.net.SocketAddress
 
 class PlotterConnection(
     private val controller: MyViewController,
@@ -73,8 +76,14 @@ class PlotterConnection(
                         updateMessage("(${index + 1}/${gcodeList.size})")
                     }
                 } catch (e: IllegalAnswerException) {
-                    // TODO popup
-                    System.err.println(e.message)
+                    Platform.runLater {
+                        val alert = Alert(Alert.AlertType.ERROR)
+                        alert.title = "Error"
+                        alert.headerText = null
+                        alert.contentText = "Plotter sent illegal information."
+                        alert.showAndWait()
+                        System.err.println(e.message)
+                    }
                 } finally {
                     println("Finished streaming, sending reset command")
                     sendLine(GcodeParser.resetCommand, writer, reader, false)
@@ -89,16 +98,29 @@ class PlotterConnection(
         println("Connecting to: \"$ip:$port\"")
 
         try {
-            socket = Socket(ip, port)
+            socket = Socket()
+            socket?.connect(InetSocketAddress(ip, port), 2500)
 
         } catch (e: IOException) {
-            // TODO popup
             println("Could not connect")
             System.err.println(e.message)
+            Platform.runLater {
+                val alert = Alert(Alert.AlertType.ERROR)
+                alert.title = "Error"
+                alert.headerText = null
+                alert.contentText = "Could not connect to the plotter. (connection timed out)"
+                alert.showAndWait()
+            }
         } catch (e: IllegalArgumentException) {
-            // TODO popup
             println("Port \"$port\" is out of range")
             System.err.println(e.message)
+            Platform.runLater {
+                val alert = Alert(Alert.AlertType.ERROR)
+                alert.title = "Error"
+                alert.headerText = null
+                alert.contentText = "The port provided is out of range."
+                alert.showAndWait()
+            }
         } finally {
             if (!isCancelled && socket?.isConnected == true) {
                 return true

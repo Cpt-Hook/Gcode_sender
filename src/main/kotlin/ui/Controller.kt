@@ -5,6 +5,7 @@ import javafx.beans.property.*
 import javafx.beans.value.ChangeListener
 import javafx.event.EventHandler
 import javafx.scene.canvas.Canvas
+import javafx.scene.control.Alert
 import javafx.scene.paint.Color
 import javafx.stage.WindowEvent
 import tornadofx.Controller
@@ -104,7 +105,11 @@ class MyViewController : Controller() {
             Thread(connection).apply { isDaemon = false }.start()
 
         } catch (e: NumberFormatException) {
-            // TODO popup
+            val alert = Alert(Alert.AlertType.ERROR)
+            alert.title = "Error"
+            alert.headerText = null
+            alert.contentText = "Port provided is invalid."
+            alert.showAndWait()
             println("Port not a number: ${portProperty.value}")
         }
     }
@@ -128,7 +133,11 @@ class MyViewController : Controller() {
 
         } catch (e: InvalidGcodeException) {
             System.err.println(e.message)
-            // TODO popup
+            val alert = Alert(Alert.AlertType.ERROR)
+            alert.title = "Error"
+            alert.headerText = null
+            alert.contentText = "Gcode file provided is invalid"
+            alert.showAndWait()
             closeFile()
         }
     }

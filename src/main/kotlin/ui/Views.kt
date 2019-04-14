@@ -5,10 +5,16 @@ import javafx.event.EventHandler
 import javafx.geometry.Orientation
 import javafx.geometry.Pos
 import javafx.scene.Node
+import javafx.scene.control.Alert
+import javafx.scene.control.ButtonType
 import javafx.scene.layout.Priority
+import javafx.scene.layout.Region
 import javafx.scene.paint.Color
 import javafx.stage.FileChooser
 import tornadofx.*
+import javafx.scene.control.Alert.AlertType
+
+
 
 fun main(args: Array<String>) {
     println("Starting TornadoFX app")
@@ -58,8 +64,19 @@ class MenuView : MyView() {
                 }
             }
             menu("Other") {
-                item("Info")
-                item("Help")
+                item("Info").action {
+                    val alert = Alert(AlertType.INFORMATION)
+                    alert.title = "Info"
+                    alert.headerText = null
+                    alert.contentText = """
+                        Gcode_Sender v1.0
+                        Ondřej Staníček
+                        ondra.stanicek@gmail.com
+                        www.github.com/Cpt-Hook/Gcode_sender
+                    """.trimIndent()
+
+                    alert.showAndWait()
+                }
             }
         }
 }
